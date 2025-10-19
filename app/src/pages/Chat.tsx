@@ -7,6 +7,7 @@ import { client, type WSEvent } from "@repo/server";
 import typeNormalUrl from "../assets/sfx/type-normal.mp3?url";
 import typeBackUrl from "../assets/sfx/type-back.mp3?url";
 import pingUrl from "../assets/sfx/ping.mp3?url";
+import UserEdit from "../components/UserEdit";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
@@ -24,6 +25,8 @@ function Chat({
   roomId: string;
   user: { id: string; name: string };
 }) {
+  const [showEditUser, setShowEditUser] = useState(false);
+
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;
@@ -161,40 +164,56 @@ function Chat({
   }, []);
 
   return (
-    <div className="p-8">
-      <div className="mb-4 flex items-center">
-        <p className="font-medium">{user.name}</p>
-        <p className="font-medium text-gray-600">{otherUser?.name}</p>
-      </div>
-      <div className="flex flex-col gap-4">
-        <div className="relative flex h-64 flex-col gap-4">
-          <ThemBubble typingState={typing} value={otherUserMessage} />
-          <MeBubble
-            typingState={typing}
-            value={message}
-            onChange={onChange}
-            onFocus={onFocus}
-          />
+    <>
+      <div className="p-8">
+        <div className="mb-4 flex items-center gap-2">
+          <button
+            onClick={() => setShowEditUser(true)}
+            className="-mx-2 flex h-10 items-center gap-2 rounded-lg px-2 hover:bg-gray-100"
+          >
+            <div className="grid size-8 place-items-center rounded-full border-2 border-white bg-lime-200 shadow-xs ring-1 ring-gray-200">
+              <img
+                src="https://img.icons8.com/?size=48&id=16041&format=png&color=000000"
+                alt=""
+                className="size-5"
+              />
+            </div>
+            <span className="font-bold tracking-tight">{user.name}</span>
+          </button>
+          <div className="flex-1"></div>
+          <p className="font-medium text-gray-600">{otherUser?.name}</p>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="relative flex h-64 flex-col gap-4">
+            <ThemBubble typingState={typing} value={otherUserMessage} />
+            <MeBubble
+              typingState={typing}
+              value={message}
+              onChange={onChange}
+              onFocus={onFocus}
+            />
 
-          <div className="absolute -right-1 -bottom-1 size-6 rounded-full bg-lime-600"></div>
-          <div className="absolute -right-3.5 -bottom-1 size-2 rounded-full bg-lime-600"></div>
+            <div className="absolute -right-1 -bottom-1 size-6 rounded-full bg-lime-600"></div>
+            <div className="absolute -right-3.5 -bottom-1 size-2 rounded-full bg-lime-600"></div>
 
-          <div className="absolute -top-1 -right-1 size-6 rounded-full bg-gray-200"></div>
-          <div className="absolute -top-3 right-4 size-2 rounded-full bg-gray-200"></div>
+            <div className="absolute -top-1 -right-1 size-6 rounded-full bg-gray-200"></div>
+            <div className="absolute -top-3 right-4 size-2 rounded-full bg-gray-200"></div>
+          </div>
+        </div>
+        <div className="mt-4 flex gap-4">
+          <button
+            onClick={sendPing}
+            className="flex h-8 items-center rounded-md border border-gray-300 px-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+          >
+            Ping
+          </button>
+          <button className="h-8 px-4">Set typing 'me'</button>
+          <button className="h-8 px-4">Set typing 'other'</button>
+          <button className="h-8 px-4">Set typing 'both'</button>
         </div>
       </div>
-      <div className="mt-4 flex gap-4">
-        <button
-          onClick={sendPing}
-          className="flex h-8 items-center rounded-md border border-gray-300 px-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
-        >
-          Ping
-        </button>
-        <button className="h-8 px-4">Set typing 'me'</button>
-        <button className="h-8 px-4">Set typing 'other'</button>
-        <button className="h-8 px-4">Set typing 'both'</button>
-      </div>
-    </div>
+      <UserEdit open={showEditUser} onClose={setShowEditUser} user={user} />
+    </>
   );
 }
 
