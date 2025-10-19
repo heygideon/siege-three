@@ -5,7 +5,12 @@ import room from "./routes/room";
 import { websocket } from "hono/bun";
 
 const app = new Hono()
-  .use(cors({ origin: ["http://localhost:5173"], credentials: true }))
+  .use(
+    cors({
+      origin: ["http://localhost:5173", "http://desktop:5173"],
+      credentials: true,
+    })
+  )
   .route("/users", users)
   .route("/room", room);
 
