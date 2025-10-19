@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const meHeights = {
   me: 192,
@@ -14,6 +14,7 @@ export default function MeBubble({
 }: {
   typingState: TypingState;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState("");
 
   const handleKeyDown = useCallback(
@@ -24,6 +25,9 @@ export default function MeBubble({
     },
     [],
   );
+  const focusTextarea = useCallback(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   return (
     <motion.div
@@ -56,7 +60,12 @@ export default function MeBubble({
         ))}
       </p>
       <div className="absolute inset-0 flex flex-col justify-center-safe py-3.5">
+        <div
+          className="min-h-0 flex-1 cursor-text"
+          onClick={focusTextarea}
+        ></div>
         <textarea
+          ref={textareaRef}
           value={message}
           onChange={(ev) => setMessage(ev.target.value)}
           onKeyDown={handleKeyDown}
@@ -65,6 +74,10 @@ export default function MeBubble({
             typingState !== "other" && "text-lg",
           )}
         />
+        <div
+          className="min-h-0 flex-1 cursor-text"
+          onClick={focusTextarea}
+        ></div>
       </div>
     </motion.div>
   );
