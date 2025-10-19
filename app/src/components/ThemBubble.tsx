@@ -19,7 +19,7 @@ export default function ThemBubble({
     <motion.div
       animate={{ height: otherHeights[typingState] }}
       transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-      className="relative flex flex-none flex-col items-center justify-center rounded-3xl bg-gray-200 p-4"
+      className="relative flex flex-none flex-col items-center-safe justify-center-safe overflow-clip rounded-3xl bg-gray-200 px-4 py-3"
     >
       <p
         className={clsx(
@@ -45,9 +45,6 @@ export default function ThemBubble({
           </span>
         ))}
       </p>
-
-      <div className="absolute -top-1 -right-1 size-6 rounded-full bg-inherit"></div>
-      <div className="absolute -top-3 right-4 size-2 rounded-full bg-inherit"></div>
     </motion.div>
   );
 }

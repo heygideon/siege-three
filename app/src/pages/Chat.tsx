@@ -167,7 +167,7 @@ function Chat({
         <p className="font-medium text-gray-600">{otherUser?.name}</p>
       </div>
       <div className="flex flex-col gap-4">
-        <div className="flex h-64 flex-col gap-4">
+        <div className="relative flex h-64 flex-col gap-4">
           <ThemBubble typingState={typing} value={otherUserMessage} />
           <MeBubble
             typingState={typing}
@@ -175,6 +175,12 @@ function Chat({
             onChange={onChange}
             onFocus={onFocus}
           />
+
+          <div className="absolute -right-1 -bottom-1 size-6 rounded-full bg-lime-600"></div>
+          <div className="absolute -right-3.5 -bottom-1 size-2 rounded-full bg-lime-600"></div>
+
+          <div className="absolute -top-1 -right-1 size-6 rounded-full bg-gray-200"></div>
+          <div className="absolute -top-3 right-4 size-2 rounded-full bg-gray-200"></div>
         </div>
       </div>
       <div className="mt-4 flex gap-4">
