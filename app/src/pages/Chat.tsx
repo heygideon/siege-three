@@ -6,11 +6,14 @@ import { client, type WSEvent } from "@repo/server";
 
 import typeNormalUrl from "../assets/sfx/type-normal.mp3?url";
 import typeBackUrl from "../assets/sfx/type-back.mp3?url";
+import pingUrl from "../assets/sfx/ping.mp3?url";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
+const ping = new Audio(pingUrl);
 typeNormal.volume = 0.4;
 typeBack.volume = 0.4;
+ping.volume = 1;
 
 export type TypingState = "me" | "other" | "both";
 
@@ -30,10 +33,10 @@ function Chat({
 
   const wsRef = useRef<WebSocket | null>(null);
 
-  const [currentUserTyping, _setCurrentUserTyping] = useState(false);
+  const [currentUserTyping, setCurrentUserTyping] = useState(false);
   const currentUserTypingTimeout = useRef<number | null>(null);
 
-  const [otherUserTyping, _setOtherUserTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const otherUserTypingTimeout = useRef<number | null>(null);
 
   const typing = useMemo<TypingState>(() => {
@@ -74,6 +77,7 @@ function Chat({
           if (data.userId === user.id) return;
           console.log("Received message:", data.content);
 
+          navigator.vibrate?.(5);
           setOtherUserMessage((v) => {
             if (v.length > data.content.length) {
               typeBack.currentTime = 0;
@@ -85,12 +89,19 @@ function Chat({
             return data.content;
           });
 
-          _setOtherUserTyping(true);
+          setOtherUserTyping(true);
           if (otherUserTypingTimeout.current)
             clearTimeout(otherUserTypingTimeout.current);
           otherUserTypingTimeout.current = window.setTimeout(() => {
-            _setOtherUserTyping(false);
+            setOtherUserTyping(false);
           }, 2000);
+        } else if (data.type === "data") {
+          if (data.userId === user.id) return;
+          if ("ping" in data.data) {
+            ping.currentTime = 0;
+            ping.play();
+            navigator.vibrate?.([50, 150, 100]);
+          }
         }
       };
 
@@ -118,21 +129,35 @@ function Chat({
         }),
       );
 
-      _setCurrentUserTyping(true);
+      setCurrentUserTyping(true);
       if (currentUserTypingTimeout.current)
         clearTimeout(currentUserTypingTimeout.current);
       currentUserTypingTimeout.current = window.setTimeout(() => {
-        _setCurrentUserTyping(false);
+        setCurrentUserTyping(false);
       }, 2000);
     }
   }, []);
   const onFocus = useCallback(() => {
-    _setCurrentUserTyping(true);
+    setCurrentUserTyping(true);
     if (currentUserTypingTimeout.current)
       clearTimeout(currentUserTypingTimeout.current);
     currentUserTypingTimeout.current = window.setTimeout(() => {
-      _setCurrentUserTyping(false);
+      setCurrentUserTyping(false);
     }, 2000);
+  }, []);
+
+  const sendPing = useCallback(() => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "data",
+          userId: "self",
+          data: { ping: true },
+        }),
+      );
+      ping.currentTime = 0;
+      ping.play();
+    }
   }, []);
 
   return (
@@ -153,6 +178,12 @@ function Chat({
         </div>
       </div>
       <div className="mt-4 flex gap-4">
+        <button
+          onClick={sendPing}
+          className="flex h-8 items-center rounded-md border border-gray-300 px-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        >
+          Ping
+        </button>
         <button className="h-8 px-4">Set typing 'me'</button>
         <button className="h-8 px-4">Set typing 'other'</button>
         <button className="h-8 px-4">Set typing 'both'</button>

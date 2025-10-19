@@ -15,6 +15,11 @@ const MessageEvent = type({
   userId: "string",
   content: "string",
 });
+const DataEvent = type({
+  type: "'data'",
+  userId: "string",
+  data: "object",
+});
 const SysJoinEvent = type({
   type: "'sys-join'",
   userId: "string",
@@ -25,8 +30,13 @@ const SysLeaveEvent = type({
   userId: "string",
   users: type("object").as<({ id: string } & User)[]>(),
 });
-export const Event = type.or(MessageEvent, SysJoinEvent, SysLeaveEvent);
-export const UserSentEvent = type.or(MessageEvent);
+export const Event = type.or(
+  MessageEvent,
+  DataEvent,
+  SysJoinEvent,
+  SysLeaveEvent
+);
+export const UserSentEvent = type.or(MessageEvent, DataEvent);
 
 const ee = new EventEmitter<{ event: [typeof Event.infer] }>();
 
@@ -54,7 +64,7 @@ export default app
     if (!user) {
       return c.text("Unauthorized", 401);
     }
-    const roomId = nanoid();
+    const roomId = nanoid(12);
     roomsMap.set(roomId, new Set<string>());
     return c.json({ roomId });
   })
@@ -125,11 +135,19 @@ export default app
             chalk.cyanBright.bold("ws message"),
             chalk.gray(JSON.stringify(data))
           );
-          ee.emit("event", {
-            type: "message",
-            userId: user.id,
-            content: data.content,
-          });
+          if (data.type === "message") {
+            ee.emit("event", {
+              type: "message",
+              userId: user.id,
+              content: data.content,
+            });
+          } else {
+            ee.emit("event", {
+              type: "data",
+              userId: user.id,
+              data: data.data,
+            });
+          }
         },
         onClose(evt, ws) {
           const room = roomsMap.get(c.req.param("roomId"));
