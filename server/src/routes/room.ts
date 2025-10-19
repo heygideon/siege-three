@@ -8,6 +8,7 @@ import { authMiddleware, type AuthMiddlewareEnv } from "../lib/middleware";
 import { type } from "arktype";
 import destr from "destr";
 import { nanoid } from "nanoid";
+import chalk from "chalk";
 
 const MessageEvent = type({
   type: "'message'",
@@ -28,6 +29,22 @@ export const Event = type.or(MessageEvent, SysJoinEvent, SysLeaveEvent);
 export const UserSentEvent = type.or(MessageEvent);
 
 const ee = new EventEmitter<{ event: [typeof Event.infer] }>();
+
+const logEvent = (event: typeof Event.infer) => {
+  if (event.type === "message") {
+    console.log(
+      chalk.blueBright.bold("event"),
+      chalk.blueBright.italic(event.type),
+      chalk.gray(`${event.userId}: ${event.content}`)
+    );
+  } else if (event.type === "sys-join" || event.type === "sys-leave") {
+    console.log(
+      chalk.blueBright.bold("event"),
+      chalk.blueBright.italic(event.type),
+      chalk.gray(`${event.userId} (${event.users.length} present)`)
+    );
+  }
+};
 
 const app = new Hono();
 
@@ -53,11 +70,6 @@ export default app
             ws.close(1008, "Unauthorized");
             return;
           }
-          console.log(
-            "WebSocket connection opened",
-            c.req.param("roomId"),
-            user.id
-          );
 
           const room = roomsMap.get(c.req.param("roomId"));
           if (!room) {
@@ -76,11 +88,18 @@ export default app
             return;
           }
 
+          console.log(
+            chalk.yellowBright.bold("ws open"),
+            chalk.gray(
+              `${user.name} (${user.id}) joined room ${c.req.param("roomId")}`
+            )
+          );
+
           room.add(user.id);
 
           ee.on("event", (event) => {
             if (ws.readyState !== WebSocket.OPEN) return;
-            console.log("Emitting event to WebSocket:", event, user.id);
+            logEvent(event);
             ws.send(JSON.stringify(event));
           });
 
@@ -102,7 +121,10 @@ export default app
 
           const user = c.get("user")!;
 
-          console.log("Received message from WebSocket:", data);
+          console.log(
+            chalk.cyanBright.bold("ws message"),
+            chalk.gray(JSON.stringify(data))
+          );
           ee.emit("event", {
             type: "message",
             userId: user.id,
@@ -110,12 +132,19 @@ export default app
           });
         },
         onClose(evt, ws) {
-          console.log("WebSocket connection closed", evt.code, evt.reason);
           const room = roomsMap.get(c.req.param("roomId"));
           const user = c.get("user");
           if (!room || !user) {
             return;
           }
+
+          console.log(
+            chalk.yellowBright.bold("ws close"),
+            chalk.gray(
+              `${user.name} (${user.id}) left room ${c.req.param("roomId")}`
+            )
+          );
+
           room.delete(user.id);
 
           const users = Array.from(room.keys()).map((id) => ({

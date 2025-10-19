@@ -6,6 +6,7 @@ import { createSession } from "../db/sessions";
 import { setCookie } from "hono/cookie";
 import { type } from "arktype";
 import { authMiddleware } from "../lib/middleware";
+import chalk from "chalk";
 
 export const User = type({
   name: type("string.trim").to("string <= 40"),
@@ -27,6 +28,11 @@ export default app
 
     usersMap.set(userId, user);
 
+    console.log(
+      chalk.greenBright.bold("user created"),
+      chalk.gray(`${user.name} (${userId})`)
+    );
+
     const sessionId = createSession(userId);
     setCookie(c, "session", sessionId, { httpOnly: true });
 
@@ -40,6 +46,11 @@ export default app
     const body = c.req.valid("json");
     const updatedUser = { ...user, ...body };
     usersMap.set(user.id, updatedUser);
+
+    console.log(
+      chalk.greenBright.bold("user updated"),
+      chalk.gray(`${user.name} (${user.id})`)
+    );
 
     return c.json({ userId: user.id });
   });
