@@ -1,35 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import clsx from "clsx";
+import { motion } from "motion/react";
+import MeBubble from "./components/MeBubble";
+
+const meHeights = {
+  me: 192,
+  other: 48,
+  both: 120,
+};
+const otherHeights = {
+  me: 48,
+  other: 192,
+  both: 120,
+};
+type TypingState = keyof typeof meHeights & keyof typeof otherHeights;
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [typing, setTyping] = useState<TypingState>("me");
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="mx-auto max-w-xl p-8">
+      <h1>Quack</h1>
+      <div className="flex flex-col gap-4">
+        <div className="flex h-64 flex-col gap-4">
+          <motion.div
+            animate={{ height: otherHeights[typing] }}
+            transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
+            className="flex-none rounded-3xl bg-gray-200 p-4"
+          ></motion.div>
+          <MeBubble typingState={typing} />
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <div className="mt-4 flex gap-4">
+        <button className="h-8 px-4" onClick={() => setTyping("me")}>
+          Set typing 'me'
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button className="h-8 px-4" onClick={() => setTyping("other")}>
+          Set typing 'other'
+        </button>
+        <button className="h-8 px-4" onClick={() => setTyping("both")}>
+          Set typing 'both'
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
