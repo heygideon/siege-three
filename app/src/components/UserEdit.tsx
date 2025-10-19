@@ -13,10 +13,12 @@ export default function UserEdit({
   open,
   onClose,
   user,
+  onSuccess,
 }: {
   open: boolean;
   onClose: (v: boolean) => void;
   user: { id: string; name: string };
+  onSuccess?: () => void;
 }) {
   const [name, setName] = useState(user.name);
   const nameValid = useMemo(() => name.trim().length <= 40, [name]);
@@ -31,6 +33,7 @@ export default function UserEdit({
     },
     async onSuccess() {
       await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      onSuccess?.();
       onClose(false);
     },
   });

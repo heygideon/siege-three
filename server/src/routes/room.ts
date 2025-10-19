@@ -20,6 +20,9 @@ const DataEvent = type({
   userId: "string",
   data: "object",
 });
+const PropagateEvent = type({
+  type: "'propagate'",
+});
 const SysJoinEvent = type({
   type: "'sys-join'",
   userId: "string",
@@ -30,15 +33,20 @@ const SysLeaveEvent = type({
   userId: "string",
   users: type("object").as<({ id: string } & User)[]>(),
 });
+const SysUpdateEvent = type({
+  type: "'sys-update'",
+  users: type("object").as<({ id: string } & User)[]>(),
+});
 export const Event = type.or(
   MessageEvent,
   DataEvent,
   SysJoinEvent,
-  SysLeaveEvent
+  SysLeaveEvent,
+  SysUpdateEvent
 );
-export const UserSentEvent = type.or(MessageEvent, DataEvent);
+export const UserSentEvent = type.or(MessageEvent, DataEvent, PropagateEvent);
 
-const ee = new EventEmitter<{ event: [typeof Event.infer] }>();
+export const ee = new EventEmitter<{ event: [typeof Event.infer] }>();
 
 const logEvent = (event: typeof Event.infer) => {
   if (event.type === "message") {
@@ -141,11 +149,22 @@ export default app
               userId: user.id,
               content: data.content,
             });
-          } else {
+          } else if (data.type === "data") {
             ee.emit("event", {
               type: "data",
               userId: user.id,
               data: data.data,
+            });
+          } else {
+            const users = Array.from(
+              roomsMap.get(c.req.param("roomId"))!.keys()
+            ).map((id) => ({
+              id,
+              ...usersMap.get(id)!,
+            }));
+            ee.emit("event", {
+              type: "sys-update",
+              users,
             });
           }
         },

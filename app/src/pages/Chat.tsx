@@ -71,7 +71,7 @@ function Chat({
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data) as WSEvent;
-        if (data.type === "sys-join") {
+        if (data.type === "sys-join" || data.type === "sys-update") {
           const other = data.users.find((u) => u.id !== user.id) || null;
           setOtherUser(other);
         } else if (data.type === "sys-leave") {
@@ -212,7 +212,20 @@ function Chat({
           <button className="h-8 px-4">Set typing 'both'</button>
         </div>
       </div>
-      <UserEdit open={showEditUser} onClose={setShowEditUser} user={user} />
+      <UserEdit
+        open={showEditUser}
+        onClose={setShowEditUser}
+        user={user}
+        onSuccess={() => {
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(
+              JSON.stringify({
+                type: "propagate",
+              }),
+            );
+          }
+        }}
+      />
     </>
   );
 }
