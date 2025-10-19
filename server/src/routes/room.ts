@@ -74,7 +74,8 @@ export default app
           room.add(user.id);
 
           ee.on("event", (event) => {
-            console.log("Emitting event to WebSocket:", event);
+            if (ws.readyState !== WebSocket.OPEN) return;
+            console.log("Emitting event to WebSocket:", event, user.id);
             ws.send(JSON.stringify(event));
           });
 
@@ -104,6 +105,7 @@ export default app
           });
         },
         onClose(evt, ws) {
+          console.log("WebSocket connection closed", evt.code, evt.reason);
           const room = roomsMap.get(c.req.param("roomId"));
           const user = c.get("user");
           if (!room || !user) {

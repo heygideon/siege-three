@@ -1,23 +1,26 @@
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
+import type { TypingState } from "../pages/Chat";
 
 const meHeights = {
   me: 192,
   other: 48,
   both: 120,
 };
-type TypingState = keyof typeof meHeights;
 
 export default function MeBubble({
   typingState,
-  ws,
+  value,
+  onChange,
+  onFocus,
 }: {
   typingState: TypingState;
-  ws: React.RefObject<WebSocket | null>;
+  value?: string;
+  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onFocus?: () => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [message, setMessage] = useState("");
 
   const handleKeyDown = useCallback(
     (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -30,21 +33,6 @@ export default function MeBubble({
   const focusTextarea = useCallback(() => {
     textareaRef.current?.focus();
   }, []);
-  const onChange = useCallback(
-    (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setMessage(ev.target.value);
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(
-          JSON.stringify({
-            type: "message",
-            userId: "self",
-            content: ev.target.value,
-          }),
-        );
-      }
-    },
-    [ws],
-  );
 
   return (
     <motion.div
@@ -60,7 +48,7 @@ export default function MeBubble({
             : "gap-x-[5px]",
         )}
       >
-        {message.split(" ").map((word, index) => (
+        {(value || "").split(" ").map((word, index) => (
           <span
             key={index}
             className={clsx(
@@ -83,9 +71,10 @@ export default function MeBubble({
         ></div>
         <textarea
           ref={textareaRef}
-          value={message}
+          value={value}
           onChange={onChange}
           onKeyDown={handleKeyDown}
+          onFocus={onFocus}
           className={clsx(
             "field-sizing-content w-full resize-none overflow-clip px-[17px] text-center text-transparent caret-white outline-none",
             typingState !== "other" && "text-lg",
@@ -101,7 +90,7 @@ export default function MeBubble({
         className={clsx(
           "pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/50",
           typingState !== "other" && "text-lg",
-          !message ? "transition-opacity delay-100 duration-300" : "opacity-0",
+          !value ? "transition-opacity delay-100 duration-300" : "opacity-0",
         )}
       >
         Anything on your mind?

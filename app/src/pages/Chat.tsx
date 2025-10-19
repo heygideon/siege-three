@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MeBubble from "../components/MeBubble";
 import ThemBubble from "../components/ThemBubble";
 import { useRoute } from "wouter";
 import { client, type WSEvent } from "@repo/server";
 
-type TypingState = React.ComponentProps<typeof MeBubble>["typingState"];
+export type TypingState = "me" | "other" | "both";
 
 function Chat({
   roomId,
@@ -17,11 +17,28 @@ function Chat({
     id: string;
     name: string;
   } | null>(null);
-  const [typing, setTyping] = useState<TypingState>("me");
-
+  const [message, setMessage] = useState("");
   const [otherUserMessage, setOtherUserMessage] = useState<string>("");
 
-  const socket = useRef<WebSocket | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  const [currentUserTyping, _setCurrentUserTyping] = useState(false);
+  const currentUserTypingTimeout = useRef<number | null>(null);
+
+  const [otherUserTyping, _setOtherUserTyping] = useState(false);
+  const otherUserTypingTimeout = useRef<number | null>(null);
+
+  const typing = useMemo<TypingState>(() => {
+    if (currentUserTyping && otherUserTyping) {
+      return "both";
+    } else if (currentUserTyping) {
+      return "me";
+    } else if (otherUserTyping) {
+      return "other";
+    } else {
+      return "both";
+    }
+  }, [currentUserTyping, otherUserTyping]);
 
   useEffect(() => {
     let ws: WebSocket | null = null;
@@ -35,7 +52,7 @@ function Chat({
       ws = client.room[":roomId"].$ws({ param: { roomId } });
 
       ws.onopen = () => {
-        socket.current = ws;
+        wsRef.current = ws;
       };
 
       ws.onmessage = (event) => {
@@ -49,20 +66,56 @@ function Chat({
           if (data.userId === user.id) return;
           console.log("Received message:", data.content);
           setOtherUserMessage(data.content);
+
+          _setOtherUserTyping(true);
+          if (otherUserTypingTimeout.current)
+            clearTimeout(otherUserTypingTimeout.current);
+          otherUserTypingTimeout.current = window.setTimeout(() => {
+            _setOtherUserTyping(false);
+          }, 2000);
         }
       };
 
       ws.onclose = () => {
         console.log("WebSocket closed");
-        socket.current = null;
+        wsRef.current = null;
       };
     })();
 
     return () => {
+      controller.abort();
       ws?.close();
-      socket.current = null;
+      wsRef.current = null;
     };
   }, [roomId, user.id]);
+
+  const onChange = useCallback((ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(ev.target.value);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "message",
+          userId: "self",
+          content: ev.target.value,
+        }),
+      );
+
+      _setCurrentUserTyping(true);
+      if (currentUserTypingTimeout.current)
+        clearTimeout(currentUserTypingTimeout.current);
+      currentUserTypingTimeout.current = window.setTimeout(() => {
+        _setCurrentUserTyping(false);
+      }, 2000);
+    }
+  }, []);
+  const onFocus = useCallback(() => {
+    _setCurrentUserTyping(true);
+    if (currentUserTypingTimeout.current)
+      clearTimeout(currentUserTypingTimeout.current);
+    currentUserTypingTimeout.current = window.setTimeout(() => {
+      _setCurrentUserTyping(false);
+    }, 2000);
+  }, []);
 
   return (
     <div className="p-8">
@@ -73,19 +126,18 @@ function Chat({
       <div className="flex flex-col gap-4">
         <div className="flex h-64 flex-col gap-4">
           <ThemBubble typingState={typing} value={otherUserMessage} />
-          <MeBubble typingState={typing} ws={socket} />
+          <MeBubble
+            typingState={typing}
+            value={message}
+            onChange={onChange}
+            onFocus={onFocus}
+          />
         </div>
       </div>
       <div className="mt-4 flex gap-4">
-        <button className="h-8 px-4" onClick={() => setTyping("me")}>
-          Set typing 'me'
-        </button>
-        <button className="h-8 px-4" onClick={() => setTyping("other")}>
-          Set typing 'other'
-        </button>
-        <button className="h-8 px-4" onClick={() => setTyping("both")}>
-          Set typing 'both'
-        </button>
+        <button className="h-8 px-4">Set typing 'me'</button>
+        <button className="h-8 px-4">Set typing 'other'</button>
+        <button className="h-8 px-4">Set typing 'both'</button>
       </div>
     </div>
   );

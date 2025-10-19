@@ -1,12 +1,12 @@
 import clsx from "clsx";
 import { motion } from "motion/react";
+import type { TypingState } from "../pages/Chat";
 
 const otherHeights = {
   me: 48,
   other: 192,
   both: 120,
 };
-type TypingState = keyof typeof otherHeights;
 
 export default function ThemBubble({
   typingState,
