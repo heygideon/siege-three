@@ -1,13 +1,8 @@
 import { useState } from "react";
-import { motion } from "motion/react";
 import MeBubble from "../components/MeBubble";
+import ThemBubble from "../components/ThemBubble";
 
-const otherHeights = {
-  me: 48,
-  other: 192,
-  both: 120,
-};
-type TypingState = keyof typeof otherHeights;
+type TypingState = React.ComponentProps<typeof MeBubble>["typingState"];
 
 export default function Chat({
   user,
@@ -23,11 +18,7 @@ export default function Chat({
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex h-64 flex-col gap-4">
-          <motion.div
-            animate={{ height: otherHeights[typing] }}
-            transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-            className="flex-none rounded-3xl bg-gray-200 p-4"
-          ></motion.div>
+          <ThemBubble typingState={typing} />
           <MeBubble typingState={typing} />
         </div>
       </div>

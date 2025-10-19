@@ -79,6 +79,9 @@ export default function MeBubble({
           onClick={focusTextarea}
         ></div>
       </div>
+
+      <div className="absolute -right-1 -bottom-1 size-6 rounded-full bg-inherit"></div>
+      <div className="absolute -right-3.5 -bottom-1 size-2 rounded-full bg-inherit"></div>
     </motion.div>
   );
 }
