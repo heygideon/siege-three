@@ -80,6 +80,16 @@ export default function MeBubble({
         ></div>
       </div>
 
+      <p
+        className={clsx(
+          "pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/50",
+          typingState !== "other" && "text-lg",
+          !message ? "transition-opacity delay-100 duration-300" : "opacity-0",
+        )}
+      >
+        Anything on your mind?
+      </p>
+
       <div className="absolute -right-1 -bottom-1 size-6 rounded-full bg-inherit"></div>
       <div className="absolute -right-3.5 -bottom-1 size-2 rounded-full bg-inherit"></div>
     </motion.div>
