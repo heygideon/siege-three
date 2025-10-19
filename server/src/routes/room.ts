@@ -65,7 +65,7 @@ export default app
             ws.close(1008, "Room not found");
             return;
           }
-          if (room.size >= 2) {
+          if (room.size >= 2 && !room.has(user.id)) {
             console.log("Room full:", c.req.param("roomId"));
             ws.close(1008, "Room is full");
             return;
