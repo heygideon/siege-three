@@ -4,6 +4,14 @@ import ThemBubble from "../components/ThemBubble";
 import { useRoute } from "wouter";
 import { client, type WSEvent } from "@repo/server";
 
+import typeNormalUrl from "../assets/sfx/type-normal.mp3?url";
+import typeBackUrl from "../assets/sfx/type-back.mp3?url";
+
+const typeNormal = new Audio(typeNormalUrl);
+const typeBack = new Audio(typeBackUrl);
+typeNormal.volume = 0.4;
+typeBack.volume = 0.4;
+
 export type TypingState = "me" | "other" | "both";
 
 function Chat({
@@ -65,7 +73,17 @@ function Chat({
         } else if (data.type === "message") {
           if (data.userId === user.id) return;
           console.log("Received message:", data.content);
-          setOtherUserMessage(data.content);
+
+          setOtherUserMessage((v) => {
+            if (v.length > data.content.length) {
+              typeBack.currentTime = 0;
+              typeBack.play();
+            } else {
+              typeNormal.currentTime = 0;
+              typeNormal.play();
+            }
+            return data.content;
+          });
 
           _setOtherUserTyping(true);
           if (otherUserTypingTimeout.current)
