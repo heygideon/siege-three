@@ -70,6 +70,11 @@ export default app
             ws.close(1008, "Room is full");
             return;
           }
+          if (room.has(user.id)) {
+            console.log("User already in room:", user.id);
+            ws.close(1008, "User already in room");
+            return;
+          }
 
           room.add(user.id);
 
