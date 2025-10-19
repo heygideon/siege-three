@@ -11,10 +11,10 @@ function Chat({
   user,
 }: {
   roomId: string;
-  user: { _id: string; name: string };
+  user: { id: string; name: string };
 }) {
   const [otherUser, setOtherUser] = useState<{
-    _id: string;
+    id: string;
     name: string;
   } | null>(null);
   const [typing, setTyping] = useState<TypingState>("me");
@@ -24,36 +24,45 @@ function Chat({
   const socket = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = client.room[":roomId"].$ws({ param: { roomId } });
+    let ws: WebSocket | null = null;
 
-    ws.onopen = () => {
-      socket.current = ws;
-    };
+    const controller = new AbortController();
+    (async () => {
+      // React strict mode mounts, unmounts, and remounts components immediately.
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      if (controller.signal.aborted) return;
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data) as WSEvent;
-      if (data.type === "sys-join") {
-        const other = data.users.find((u) => u._id !== user._id) || null;
-        setOtherUser(other);
-      } else if (data.type === "sys-leave") {
-        setOtherUser(null);
-      } else if (data.type === "message") {
-        if (data.userId === user._id) return;
-        console.log("Received message:", data.content);
-        setOtherUserMessage(data.content);
-      }
-    };
+      ws = client.room[":roomId"].$ws({ param: { roomId } });
 
-    ws.onclose = () => {
-      console.log("WebSocket closed");
-      socket.current = null;
-    };
+      ws.onopen = () => {
+        socket.current = ws;
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data) as WSEvent;
+        if (data.type === "sys-join") {
+          const other = data.users.find((u) => u.id !== user.id) || null;
+          setOtherUser(other);
+        } else if (data.type === "sys-leave") {
+          setOtherUser(null);
+        } else if (data.type === "message") {
+          if (data.userId === user.id) return;
+          console.log("Received message:", data.content);
+          setOtherUserMessage(data.content);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log("WebSocket closed");
+        socket.current = null;
+      };
+    })();
 
     return () => {
-      ws.close();
+      ws?.close();
       socket.current = null;
     };
-  }, [roomId, user._id]);
+  }, [roomId, user.id]);
 
   return (
     <div className="p-8">
@@ -85,7 +94,7 @@ function Chat({
 export default function ChatLoader({
   user,
 }: {
-  user: { _id: string; name: string };
+  user: { id: string; name: string };
 }) {
   const [match, params] = useRoute("/room/:roomId");
 

@@ -1,10 +1,10 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { upgradeWebSocket } from "hono/bun";
 import { usersMap, type User } from "../db/users";
 import { roomsMap } from "../db/rooms";
 
 import { EventEmitter } from "node:events";
-import { authMiddleware } from "../lib/middleware";
+import { authMiddleware, type AuthMiddlewareEnv } from "../lib/middleware";
 import { type } from "arktype";
 import destr from "destr";
 import { nanoid } from "nanoid";
@@ -17,12 +17,12 @@ const MessageEvent = type({
 const SysJoinEvent = type({
   type: "'sys-join'",
   userId: "string",
-  users: type("object").as<User[]>(),
+  users: type("object").as<({ id: string } & User)[]>(),
 });
 const SysLeaveEvent = type({
   type: "'sys-leave'",
   userId: "string",
-  users: type("object").as<User[]>(),
+  users: type("object").as<({ id: string } & User)[]>(),
 });
 export const Event = type.or(MessageEvent, SysJoinEvent, SysLeaveEvent);
 export const UserSentEvent = type.or(MessageEvent);
@@ -38,16 +38,16 @@ export default app
       return c.text("Unauthorized", 401);
     }
     const roomId = nanoid();
-    roomsMap.set(roomId, { _id: roomId, users: [user.id] });
+    roomsMap.set(roomId, new Set<string>());
     return c.json({ roomId });
   })
   .get(
     "/:roomId",
     authMiddleware,
-    upgradeWebSocket((c) => {
+    upgradeWebSocket((c: Context<AuthMiddlewareEnv>) => {
       return {
         onOpen(evt, ws) {
-          const user = c.get("user") as User | null;
+          const user = c.get("user");
           if (!user) {
             console.log("No user in WebSocket connection");
             ws.close(1008, "Unauthorized");
@@ -56,7 +56,7 @@ export default app
           console.log(
             "WebSocket connection opened",
             c.req.param("roomId"),
-            user._id
+            user.id
           );
 
           const room = roomsMap.get(c.req.param("roomId"));
@@ -65,23 +65,26 @@ export default app
             ws.close(1008, "Room not found");
             return;
           }
-          if (room.users.length >= 2) {
+          if (room.size >= 2) {
             console.log("Room full:", c.req.param("roomId"));
             ws.close(1008, "Room is full");
             return;
           }
 
-          room.users.push(user._id);
+          room.add(user.id);
 
           ee.on("event", (event) => {
             console.log("Emitting event to WebSocket:", event);
             ws.send(JSON.stringify(event));
           });
 
-          const users = room.users.map((id) => usersMap.get(id)!);
+          const users = Array.from(room.keys()).map((id) => ({
+            id,
+            ...usersMap.get(id)!,
+          }));
           ee.emit("event", {
             type: "sys-join",
-            userId: user._id,
+            userId: user.id,
             users,
           });
         },
@@ -91,12 +94,12 @@ export default app
             return;
           }
 
-          const user = c.get("user") as User;
+          const user = c.get("user")!;
 
           console.log("Received message from WebSocket:", data);
           ee.emit("event", {
             type: "message",
-            userId: user._id,
+            userId: user.id,
             content: data.content,
           });
         },
@@ -106,9 +109,12 @@ export default app
           if (!room || !user) {
             return;
           }
-          room.users = room.users.filter((id) => id !== user.id);
+          room.delete(user.id);
 
-          const users = room.users.map((id) => usersMap.get(id)!);
+          const users = Array.from(room.keys()).map((id) => ({
+            id,
+            ...usersMap.get(id)!,
+          }));
           ee.emit("event", {
             type: "sys-leave",
             userId: user.id,

@@ -25,7 +25,7 @@ export default app
     const user = c.req.valid("json");
     const userId = nanoid();
 
-    usersMap.set(userId, { ...user, _id: userId });
+    usersMap.set(userId, user);
 
     const sessionId = createSession(userId);
     setCookie(c, "session", sessionId, { httpOnly: true });
