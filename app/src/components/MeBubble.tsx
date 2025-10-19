@@ -33,7 +33,7 @@ export default function MeBubble({
     <motion.div
       animate={{ height: meHeights[typingState] }}
       transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-      className="relative flex flex-none items-center-safe justify-center-safe rounded-3xl bg-sky-600 px-4 py-3.5 font-medium text-white"
+      className="relative flex flex-none items-center-safe justify-center-safe rounded-3xl bg-lime-600 px-4 py-3 font-medium text-white"
     >
       <p
         className={clsx(
@@ -59,7 +59,7 @@ export default function MeBubble({
           </span>
         ))}
       </p>
-      <div className="absolute inset-0 flex flex-col justify-center-safe py-3.5">
+      <div className="absolute inset-0 flex flex-col justify-center-safe py-3">
         <div
           className="min-h-0 flex-1 cursor-text"
           onClick={focusTextarea}

@@ -1,51 +1,32 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import clsx from "clsx";
-import { motion } from "motion/react";
-import MeBubble from "./components/MeBubble";
+import Chat from "./pages/Chat";
+import User from "./pages/User";
+import { client } from "@repo/server";
+import { useQuery } from "@tanstack/react-query";
 
-const meHeights = {
-  me: 192,
-  other: 48,
-  both: 120,
-};
-const otherHeights = {
-  me: 48,
-  other: 192,
-  both: 120,
-};
-type TypingState = keyof typeof meHeights & keyof typeof otherHeights;
-
-function App() {
-  const [typing, setTyping] = useState<TypingState>("me");
+export default function App() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      const res = await client.users.$get();
+      if (!res.ok) {
+        throw new Error("Failed to create user");
+      }
+      return await res.json();
+    },
+    retry: false,
+  });
 
   return (
-    <div className="mx-auto max-w-xl p-8">
-      <h1>Quack</h1>
-      <div className="flex flex-col gap-4">
-        <div className="flex h-64 flex-col gap-4">
-          <motion.div
-            animate={{ height: otherHeights[typing] }}
-            transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-            className="flex-none rounded-3xl bg-gray-200 p-4"
-          ></motion.div>
-          <MeBubble typingState={typing} />
+    <div className="mx-auto max-w-xl">
+      {isLoading ? (
+        <div className="p-8">
+          <div className="mx-auto size-4 animate-spin rounded-full border border-transparent border-r-lime-600"></div>
         </div>
-      </div>
-      <div className="mt-4 flex gap-4">
-        <button className="h-8 px-4" onClick={() => setTyping("me")}>
-          Set typing 'me'
-        </button>
-        <button className="h-8 px-4" onClick={() => setTyping("other")}>
-          Set typing 'other'
-        </button>
-        <button className="h-8 px-4" onClick={() => setTyping("both")}>
-          Set typing 'both'
-        </button>
-      </div>
+      ) : data ? (
+        <Chat user={data} />
+      ) : (
+        <User />
+      )}
     </div>
   );
 }
-
-export default App;
