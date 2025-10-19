@@ -20,6 +20,7 @@
   "dependencies": {
     "@hono/standard-validator": "^0.1.5",
     "arktype": "^2.1.23",
+    "destr": "^2.0.5",
     "hono": "^4.10.1",
     "nanoid": "^5.1.6"
   }

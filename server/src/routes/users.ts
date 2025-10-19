@@ -7,11 +7,11 @@ import { setCookie } from "hono/cookie";
 import { type } from "arktype";
 import { authMiddleware } from "../lib/middleware";
 
-const app = new Hono();
-
-const User = type({
+export const User = type({
   name: type("string.trim").to("string <= 40"),
 });
+
+const app = new Hono();
 
 export default app
   .get("/", authMiddleware, async (c) => {

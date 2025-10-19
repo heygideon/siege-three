@@ -1,6 +1,4 @@
-import { type } from "arktype";
-
-interface User {
+export interface User {
   _id: string;
   name: string;
 }

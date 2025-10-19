@@ -11,8 +11,10 @@ type TypingState = keyof typeof meHeights;
 
 export default function MeBubble({
   typingState,
+  ws,
 }: {
   typingState: TypingState;
+  ws: React.RefObject<WebSocket | null>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState("");
@@ -28,6 +30,21 @@ export default function MeBubble({
   const focusTextarea = useCallback(() => {
     textareaRef.current?.focus();
   }, []);
+  const onChange = useCallback(
+    (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setMessage(ev.target.value);
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(
+          JSON.stringify({
+            type: "message",
+            userId: "self",
+            content: ev.target.value,
+          }),
+        );
+      }
+    },
+    [ws],
+  );
 
   return (
     <motion.div
@@ -67,7 +84,7 @@ export default function MeBubble({
         <textarea
           ref={textareaRef}
           value={message}
-          onChange={(ev) => setMessage(ev.target.value)}
+          onChange={onChange}
           onKeyDown={handleKeyDown}
           className={clsx(
             "field-sizing-content w-full resize-none overflow-clip px-[17px] text-center text-transparent caret-white outline-none",
