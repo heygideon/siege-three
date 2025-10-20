@@ -89,7 +89,7 @@ export default function MeBubble({
 
       <p
         className={clsx(
-          "pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/50",
+          "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-white/50",
           typingState !== "other" && "text-lg",
           !value ? "transition-opacity delay-100 duration-300" : "opacity-0",
         )}
