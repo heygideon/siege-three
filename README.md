@@ -9,7 +9,7 @@ It's like Honk, but it goes quack instead. Because ducks are cool. 🦆
 - Emoji reactions and pings to be fun and/or annoying
 - Nice sound effects (and haptic feedback on phones!)
 
-Best experienced in Chrome, or a Chrome-like browser.
+> Best experienced in Chrome, or a Chrome-like browser. You'll also need a friend, or another device, if friends aren't your thing.
 
 <img width="1874" height="1340" alt="quack prev" src="https://github.com/user-attachments/assets/f98d2c43-355e-4995-997c-e6fe71c63818" />
 
