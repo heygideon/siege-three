@@ -7,15 +7,20 @@ import { client, type WSEvent } from "@repo/server";
 import typeNormalUrl from "../assets/sfx/type-normal.mp3?url";
 import typeBackUrl from "../assets/sfx/type-back.mp3?url";
 import pingUrl from "../assets/sfx/ping.mp3?url";
+import popUrl from "../assets/sfx/pop.mp3?url";
 import UserEdit from "../components/UserEdit";
 import { IconBell, IconTrash } from "@tabler/icons-react";
+import Reactions from "../components/Reactions";
+import { displayReaction } from "../lib/reactions";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
 const ping = new Audio(pingUrl);
+const pop = new Audio(popUrl);
 typeNormal.volume = 0.4;
 typeBack.volume = 0.4;
 ping.volume = 1;
+pop.volume = 1;
 
 export type TypingState = "me" | "other" | "both";
 
@@ -102,11 +107,16 @@ function Chat({
             }, 2000);
           }
         } else if (data.type === "data") {
-          if (data.userId === user.id) return;
           if ("ping" in data.data) {
+            if (data.userId === user.id) return;
             ping.currentTime = 0;
             ping.play();
             navigator.vibrate?.([50, 150, 100]);
+          } else if ("reaction" in data.data) {
+            pop.currentTime = 0;
+            pop.play();
+            navigator.vibrate?.(20);
+            displayReaction(data.data.reaction as string);
           }
         }
       };
@@ -219,7 +229,23 @@ function Chat({
             <IconTrash className="size-5 text-gray-400 transition group-hover:text-gray-600" />
           </button>
         </div>
+        <div className="mt-8">
+          <Reactions
+            onChange={(reaction: string) => {
+              if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN)
+                return;
+              wsRef.current.send(
+                JSON.stringify({
+                  type: "data",
+                  userId: "self",
+                  data: { reaction },
+                }),
+              );
+            }}
+          />
+        </div>
       </div>
+
       <UserEdit
         open={showEditUser}
         onClose={setShowEditUser}

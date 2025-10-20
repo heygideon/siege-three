@@ -4,7 +4,18 @@
   --default-font-family: "Quicksand", sans-serif;
 }
 
-@utility animate-char-in {
+@layer base {
+  html,
+  body,
+  #root {
+    @apply size-full;
+  }
+  body {
+    @apply overflow-x-clip;
+  }
+}
+
+.animate-char-in {
   animation: char-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes char-in {
@@ -13,5 +24,19 @@
   }
   100% {
     transform: scale(1);
+  }
+}
+
+.animate-reaction {
+  animation: reaction-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes reaction-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
