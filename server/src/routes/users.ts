@@ -34,7 +34,12 @@ export default app
     );
 
     const sessionId = createSession(userId);
-    setCookie(c, "session", sessionId, { httpOnly: true });
+    setCookie(c, "session", sessionId, {
+      httpOnly: true,
+      sameSite: "None",
+      secure: true,
+      path: "/",
+    });
 
     return c.json({ userId });
   })
