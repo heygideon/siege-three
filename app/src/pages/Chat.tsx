@@ -8,6 +8,7 @@ import typeNormalUrl from "../assets/sfx/type-normal.mp3?url";
 import typeBackUrl from "../assets/sfx/type-back.mp3?url";
 import pingUrl from "../assets/sfx/ping.mp3?url";
 import UserEdit from "../components/UserEdit";
+import { IconBell, IconTrash } from "@tabler/icons-react";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
@@ -203,16 +204,20 @@ function Chat({
             <div className="absolute -top-3 right-4 size-2 rounded-full bg-gray-200"></div>
           </div>
         </div>
-        <div className="mt-4 flex gap-4">
+        <div className="mt-4 flex gap-2">
+          <div className="flex-1"></div>
           <button
-            onClick={sendPing}
-            className="flex h-8 items-center rounded-md border border-gray-300 px-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            onClick={() => sendPing()}
+            className="group grid size-8 place-items-center rounded-full transition hover:bg-gray-200"
           >
-            Ping
+            <IconBell className="size-5 text-gray-400 transition group-hover:text-gray-600" />
           </button>
-          <button className="h-8 px-4">Set typing 'me'</button>
-          <button className="h-8 px-4">Set typing 'other'</button>
-          <button className="h-8 px-4">Set typing 'both'</button>
+          <button
+            onClick={() => onChange("")}
+            className="group grid size-8 place-items-center rounded-full transition hover:bg-gray-200"
+          >
+            <IconTrash className="size-5 text-gray-400 transition group-hover:text-gray-600" />
+          </button>
         </div>
       </div>
       <UserEdit
