@@ -7,7 +7,9 @@ It's like Honk, but it goes quack instead. Because ducks are cool. 🦆
 - Enter your name to create or join a two-person room
 - Send ephemeral messages to each other, in the moment
 - Emoji reactions and pings to be fun and/or annoying
-- Nice sound effects
+- Nice sound effects (and haptic feedback on phones!)
+
+Best experienced in Chrome, or a Chrome-like browser.
 
 <img width="1874" height="1340" alt="quack prev" src="https://github.com/user-attachments/assets/f98d2c43-355e-4995-997c-e6fe71c63818" />
 
