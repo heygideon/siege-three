@@ -14,6 +14,7 @@ import { IconBell, IconTrash } from "@tabler/icons-react";
 import Reactions from "../components/Reactions";
 import { displayReaction } from "../lib/reactions";
 import clsx from "clsx";
+import { animateCSS } from "../lib/animatecss";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
@@ -121,6 +122,7 @@ function Chat({
             ping.currentTime = 0;
             ping.play();
             navigator.vibrate?.([50, 150, 100]);
+            animateCSS(document.body, "shakeX");
           } else if ("reaction" in data.data) {
             pop.currentTime = 0;
             pop.play();
