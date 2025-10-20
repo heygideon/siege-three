@@ -44,7 +44,7 @@ export default function UserEdit({
         transition
         className="fixed inset-0 bg-black/30 transition data-closed:opacity-0"
       />
-      <div className="safe fixed inset-0 flex items-center-safe justify-center p-8">
+      <div className="safe fixed inset-0 flex items-center-safe justify-center p-6">
         <DialogPanel
           transition
           className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg transition data-closed:scale-105 data-closed:opacity-0"

@@ -10,11 +10,12 @@ import pingUrl from "../assets/sfx/ping.mp3?url";
 import popUrl from "../assets/sfx/pop.mp3?url";
 import enterUrl from "../assets/sfx/enter.mp3?url";
 import UserEdit from "../components/UserEdit";
-import { IconBell, IconTrash } from "@tabler/icons-react";
+import { IconBell, IconDice, IconTrash } from "@tabler/icons-react";
 import Reactions from "../components/Reactions";
 import { displayReaction } from "../lib/reactions";
 import clsx from "clsx";
 import { animateCSS } from "../lib/animatecss";
+import NoughtsCrosses from "../components/NoughtsCrosses";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
@@ -37,6 +38,9 @@ function Chat({
   user: { id: string; name: string };
 }) {
   const [showEditUser, setShowEditUser] = useState(false);
+  const [showNoughtsCrosses, setShowNoughtsCrosses] = useState(false);
+
+  const [connected, setConnected] = useState(false);
 
   const [otherUser, setOtherUser] = useState<{
     id: string;
@@ -78,6 +82,7 @@ function Chat({
 
       ws.onopen = () => {
         wsRef.current = ws;
+        setConnected(true);
       };
 
       ws.onmessage = (event) => {
@@ -263,6 +268,12 @@ function Chat({
         <div className="mt-4 flex gap-2">
           <div className="flex-1"></div>
           <button
+            onClick={() => setShowNoughtsCrosses(true)}
+            className="group grid size-8 place-items-center rounded-full transition hover:bg-gray-200"
+          >
+            <IconDice className="size-5 text-gray-400 transition group-hover:text-gray-600" />
+          </button>
+          <button
             onClick={() => sendPing()}
             className="group grid size-8 place-items-center rounded-full transition hover:bg-gray-200"
           >
@@ -292,6 +303,14 @@ function Chat({
         </div>
       </div>
 
+      {connected && (
+        <NoughtsCrosses
+          open={showNoughtsCrosses}
+          onClose={setShowNoughtsCrosses}
+          userId={user.id}
+          wsRef={wsRef}
+        />
+      )}
       <UserEdit
         open={showEditUser}
         onClose={setShowEditUser}
