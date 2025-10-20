@@ -210,7 +210,7 @@ function Chat({
             <div
               className={clsx(
                 "col-start-1 row-start-1 flex items-center gap-2 transition",
-                !otherUser && "-translate-x-1 opacity-0",
+                !otherUser && "pointer-events-none -translate-x-1 opacity-0",
               )}
             >
               <span className="font-medium text-gray-600">
@@ -227,7 +227,7 @@ function Chat({
             <div
               className={clsx(
                 "col-start-1 row-start-1 flex items-baseline gap-2 text-sm font-medium transition",
-                otherUser && "translate-x-1 opacity-0",
+                otherUser && "pointer-events-none translate-x-1 opacity-0",
               )}
             >
               <span className="text-gray-400">it's empty...</span>
