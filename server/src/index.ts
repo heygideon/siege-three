@@ -7,7 +7,7 @@ import { websocket } from "hono/bun";
 const app = new Hono()
   .use(
     cors({
-      origin: ["http://localhost:5173"],
+      origin: ["http://localhost:5173", "https://siege-three.pages.dev"],
       credentials: true,
     })
   )
