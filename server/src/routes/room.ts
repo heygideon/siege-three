@@ -9,6 +9,7 @@ import { type } from "arktype";
 import destr from "destr";
 import { nanoid } from "nanoid";
 import chalk from "chalk";
+import { generateRoomId } from "../lib/roomid";
 
 const MessageEvent = type({
   type: "'message'",
@@ -72,7 +73,7 @@ export default app
     if (!user) {
       return c.text("Unauthorized", 401);
     }
-    const roomId = nanoid(12);
+    const roomId = await generateRoomId();
     roomsMap.set(roomId, new Set<string>());
     return c.json({ roomId });
   })
