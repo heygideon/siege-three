@@ -8,19 +8,23 @@ import typeNormalUrl from "../assets/sfx/type-normal.mp3?url";
 import typeBackUrl from "../assets/sfx/type-back.mp3?url";
 import pingUrl from "../assets/sfx/ping.mp3?url";
 import popUrl from "../assets/sfx/pop.mp3?url";
+import enterUrl from "../assets/sfx/enter.mp3?url";
 import UserEdit from "../components/UserEdit";
 import { IconBell, IconTrash } from "@tabler/icons-react";
 import Reactions from "../components/Reactions";
 import { displayReaction } from "../lib/reactions";
+import clsx from "clsx";
 
 const typeNormal = new Audio(typeNormalUrl);
 const typeBack = new Audio(typeBackUrl);
 const ping = new Audio(pingUrl);
 const pop = new Audio(popUrl);
+const enter = new Audio(enterUrl);
 typeNormal.volume = 0.4;
 typeBack.volume = 0.4;
 ping.volume = 1;
 pop.volume = 1;
+enter.volume = 1;
 
 export type TypingState = "me" | "other" | "both";
 
@@ -77,7 +81,12 @@ function Chat({
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data) as WSEvent;
-        if (data.type === "sys-join" || data.type === "sys-update") {
+        if (data.type === "sys-join") {
+          const other = data.users.find((u) => u.id !== user.id) || null;
+          setOtherUser(other);
+          enter.currentTime = 0;
+          enter.play();
+        } else if (data.type === "sys-update") {
           const other = data.users.find((u) => u.id !== user.id) || null;
           setOtherUser(other);
         } else if (data.type === "sys-leave") {
@@ -192,10 +201,45 @@ function Chat({
                 className="size-5"
               />
             </div>
-            <span className="font-bold tracking-tight">{user.name}</span>
+            <span className="font-bold">{user.name}</span>
           </button>
           <div className="flex-1"></div>
-          <p className="font-medium text-gray-600">{otherUser?.name}</p>
+          <div className="grid grid-cols-1 grid-rows-1 items-center justify-items-end">
+            <div
+              className={clsx(
+                "col-start-1 row-start-1 flex items-center gap-2 transition",
+                !otherUser && "-translate-x-1 opacity-0",
+              )}
+            >
+              <span className="font-medium text-gray-600">
+                {otherUser?.name}
+              </span>
+              <div className="grid size-8 place-items-center rounded-full border-2 border-white bg-gray-200 shadow-xs ring-1 ring-gray-200">
+                <img
+                  src="https://img.icons8.com/?size=48&id=16041&format=png&color=000000"
+                  alt=""
+                  className="size-5 grayscale"
+                />
+              </div>
+            </div>
+            <div
+              className={clsx(
+                "col-start-1 row-start-1 flex items-baseline gap-2 text-sm font-medium transition",
+                otherUser && "translate-x-1 opacity-0",
+              )}
+            >
+              <span className="text-gray-400">it's empty...</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert("Link copied to clipboard!");
+                }}
+                className="text-gray-600 underline-offset-2 hover:underline"
+              >
+                Copy link
+              </button>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col gap-4">
           <div className="relative flex h-64 flex-col gap-4">
