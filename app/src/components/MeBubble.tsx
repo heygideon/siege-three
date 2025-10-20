@@ -17,7 +17,7 @@ export default function MeBubble({
 }: {
   typingState: TypingState;
   value?: string;
-  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange: (v: string) => void;
   onFocus?: () => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -26,9 +26,10 @@ export default function MeBubble({
     (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (ev.key === "Enter") {
         ev.preventDefault();
+        onChange("");
       }
     },
-    [],
+    [onChange],
   );
   const focusTextarea = useCallback(() => {
     textareaRef.current?.focus();
@@ -72,7 +73,7 @@ export default function MeBubble({
         <textarea
           ref={textareaRef}
           value={value}
-          onChange={onChange}
+          onChange={(ev) => onChange(ev.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={onFocus}
           className={clsx(

@@ -92,12 +92,14 @@ function Chat({
             return data.content;
           });
 
-          setOtherUserTyping(true);
-          if (otherUserTypingTimeout.current)
-            clearTimeout(otherUserTypingTimeout.current);
-          otherUserTypingTimeout.current = window.setTimeout(() => {
-            setOtherUserTyping(false);
-          }, 2000);
+          if (data.content.trim()) {
+            setOtherUserTyping(true);
+            if (otherUserTypingTimeout.current)
+              clearTimeout(otherUserTypingTimeout.current);
+            otherUserTypingTimeout.current = window.setTimeout(() => {
+              setOtherUserTyping(false);
+            }, 2000);
+          }
         } else if (data.type === "data") {
           if (data.userId === user.id) return;
           if ("ping" in data.data) {
@@ -121,17 +123,18 @@ function Chat({
     };
   }, [roomId, user.id]);
 
-  const onChange = useCallback((ev: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(ev.target.value);
+  const onChange = useCallback((value: string) => {
+    setMessage(value);
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
           type: "message",
           userId: "self",
-          content: ev.target.value,
+          content: value,
         }),
       );
-
+    }
+    if (value.trim()) {
       setCurrentUserTyping(true);
       if (currentUserTypingTimeout.current)
         clearTimeout(currentUserTypingTimeout.current);
