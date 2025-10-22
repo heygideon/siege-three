@@ -15,6 +15,11 @@ It's like Honk, but it goes quack instead. Because ducks are cool. 🦆
 
 ---
 
+## How it werks
+It's essentially a simple pub-sub server with WebSockets. When you send a message, the server forwards it to the other person in the room with you.
+
+Each client can then detect when the other person is typing (or pauses typing) and change the chat bubble size.
+
 ## Development
 
 Iff you want to try this on your computer:
@@ -32,7 +37,7 @@ pnpm -r --parallel dev
 ## Credits
 
 - [Honk](https://honk.me/) by Los Feliz Engineering (no longer available)
-- Made with [React](https://react.dev/), [Vite](https://vite.dev/) [Tailwind CSS](https://tailwindcss.com/) annd [React](https://hono.dev/),
+- Made with [React](https://react.dev/), [Vite](https://vite.dev/), [Hono](https://hono.dev/), [Tailwind CSS](https://tailwindcss.com/) annd [React](https://hono.dev/)
 - Chat bubble animation made with [Framer Motion](https://motion.dev)
 - Icons from [Tabler Icons](https://tabler.io/icons)
 - SFX from [Freesound](https://freesound.org)
